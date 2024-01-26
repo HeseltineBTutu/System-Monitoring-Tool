@@ -8,9 +8,14 @@ ALERT_THRESHOLD=90
 function collect_system_info {
 	echo "Timestamp: $(date)" >> "$DATA_FILE"
 	echo "CPU Usage: $(top -b -n 1 | awk '/%Cpu/{print $2}')" >> "$DATA_FILE"
-	echo "Memory Usage: $(free - m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
-	echo "Disk Space: $(df -h | awk '/\/$/ {print %5}')" >> "$DATA_FILE"
-	echo "Network Activity: $(ifconfig | grep 'RX packets' | awk '{print $2}') RX packets" >> "$DATA_FILE"
+	echo "Memory Usage: $(free -m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
+	echo "Disk Space: $(df -h | awk '/\/$/ {print $5}')" >> "$DATA_FILE"
+
+	# Extract network information
+	RX_Packets=$(ifconfig | grep 'RX packets' | awk '{print $2}' | cut -d ':' -f2)
+	RX_Bytes=$(ifconfig | grep 'RX bytes' | awk '{print $2}' | cut -d ':' -f2)
+
+	echo "Network Activity: RX Packets: $RX_Packets, RX Bytes: $RX_Bytes" >> "$DATA_FILE"
 }
 
 # Main script
