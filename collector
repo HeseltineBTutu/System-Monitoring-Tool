@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Configuration
+DATA_FILE="system_data.txt"
+ALERT_THRESHOLD=90
+
+# Function to collect system information
+function collect_system_info {
+	echo "Timestamp: $(date)" >> "$DATA_FILE"
+	echo "CPU Usage: $(top -b -n 1 | awk '/%Cpu/{print $2}')" >> "$DATA_FILE"
+	echo "Memory Usage: $(free - m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
+	echo "Disk Space: $(df -h | awk '/\/$/ {print %5}')" >> "$DATA_FILE"
+	echo "Network Activity: $(ifconfig | grep 'RX packets' | awk '{print $2}') RX packets" >> "$DATA_FILE"
+}
+
+# Main script
+collect_system_info
