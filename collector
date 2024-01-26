@@ -3,6 +3,8 @@
 # Configuration
 DATA_FILE="system_data.txt"
 ALERT_THRESHOLD=90
+# NETWORK_INTERFACE="usb0"
+
 
 # Function to collect system information
 function collect_system_info {
@@ -11,11 +13,12 @@ function collect_system_info {
 	echo "Memory Usage: $(free -m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
 	echo "Disk Space: $(df -h | awk '/\/$/ {print $5}')" >> "$DATA_FILE"
 
-	# Extract network information
-	RX_Packets=$(ifconfig | grep 'RX packets' | awk '{print $2}' | cut -d ':' -f2)
-	RX_Bytes=$(ifconfig | grep 'RX bytes' | awk '{print $2}' | cut -d ':' -f2)
+	# Network information (commented out for now)
+	# RX_Packets=$(ifconfig $NETWORK_INTERFACE | awk '/RX packets/{print $2}' | cut -d ':' -f2)
+	#RX_Bytes=$(ifconfig $NETWORK_INTERFACE | awk '/RX bytes/{print $2}' | cut -d ':' -f2)
 
-	echo "Network Activity: RX Packets: $RX_Packets, RX Bytes: $RX_Bytes" >> "$DATA_FILE"
+
+	# echo "Network Activity: RX Packets: $RX_Packets, RX Bytes: $RX_Bytes" >> "$DATA_FILE"
 }
 
 # Main script
