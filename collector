@@ -1,25 +1,72 @@
 #!/usr/bin/env bash
 
-# Configuration
-DATA_FILE="system_data.txt"
-ALERT_THRESHOLD=90
-# NETWORK_INTERFACE="usb0"
+# Default configuration
+DEFAULT_DATA_FILE="system_data.txt"
+DEFAULT_ALERT_THRESHOLD=90
 
+# Get command-line arguments or use default values
+DATA_FILE=${1:-$DEFAULT_DATA_FILE}
+ALERT_THRESHOLD=${2:-$DEFAULT_ALERT_THRESHOLD}
+
+# Function to check if a command exists
+function command_exists {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to check disk space and trigger an alert if necessary
+function check_disk_space {
+    if ! command_exists "df"; then
+        echo "Error: 'df' command not found. Please install the 'coreutils' package."
+        exit 1
+    fi
+
+    local disk_space=$(df -h | awk '/\/$/ {print $5}' | tr -d '%')
+
+    if [[ ! "$disk_space" =~ ^[0-9]+$ ]]; then
+        echo "Error: Unable to determine disk space. Check 'df' output."
+        exit 1
+    fi
+    
+    if ((disk_space >= ALERT_THRESHOLD)); then
+        echo "Disk space alert: Usage is above the threshold ($disk_space%)"
+        # Add your alert mechanism here (e.g., send an email, log to another file, etc.)
+    else
+        echo "Disk space is within acceptable limits ($disk_space%)"
+    fi
+}
 
 # Function to collect system information
 function collect_system_info {
-	echo "Timestamp: $(date)" >> "$DATA_FILE"
-	echo "CPU Usage: $(top -b -n 1 | awk '/%Cpu/{print $2}')" >> "$DATA_FILE"
-	echo "Memory Usage: $(free -m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
-	echo "Disk Space: $(df -h | awk '/\/$/ {print $5}')" >> "$DATA_FILE"
+    if ! command_exists "top" || ! command_exists "free"; then
+        echo "Error: 'top' or 'free' command not found. Please install the required packages."
+        exit 1
+    fi
 
-	# Network information (commented out for now)
-	# RX_Packets=$(ifconfig $NETWORK_INTERFACE | awk '/RX packets/{print $2}' | cut -d ':' -f2)
-	#RX_Bytes=$(ifconfig $NETWORK_INTERFACE | awk '/RX bytes/{print $2}' | cut -d ':' -f2)
+    echo "Timestamp: $(date)" >> "$DATA_FILE"
+    echo "CPU Usage: $(top -b -n 1 | awk '/%Cpu/{print $2}')" >> "$DATA_FILE"
+    echo "Memory Usage: $(free -m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
 
+    if ! command_exists "df"; then
+        echo "Error: 'df' command not found. Please install the 'coreutils' package."
+        exit 1
+    fi
 
-	# echo "Network Activity: RX Packets: $RX_Packets, RX Bytes: $RX_Bytes" >> "$DATA_FILE"
+    local disk_space=$(df -h | awk '/\/$/ {print $5}' | tr -d '%')
+
+    if [[ ! "$disk_space" =~ ^[0-9]+$ ]]; then
+        echo "Error: Unable to determine disk space. Check 'df' output."
+        exit 1
+    fi
+
+    echo "Disk Space: $disk_space%" >> "$DATA_FILE"
+
+    # Network information (commented out for now)
+    # RX_Packets=$(ifconfig $NETWORK_INTERFACE | awk '/RX packets/{print $2}' | cut -d ':' -f2)
+    # RX_Bytes=$(ifconfig $NETWORK_INTERFACE | awk '/RX bytes/{print $2}' | cut -d ':' -f2)
+
+    # echo "Network Activity: RX Packets: $RX_Packets, RX Bytes: $RX_Bytes" >> "$DATA_FILE"
 }
 
 # Main script
 collect_system_info
+check_disk_space
