@@ -17,6 +17,8 @@ This project implements a system monitoring and reporting tool using Bash script
 - Ensure that you have the necessary permissions to read system data and execute scripts.
 - The `system_data.txt` file should be present in the same directory as the executable.
 
+Note:
+Make sure the script has execute permissions (chmod +x script.sh) before running it. Additionally, it relies on system commands (df, top, free), so ensure those commands are available on your system.
 ### Execution
 ```bash
 ./system_analyzer
