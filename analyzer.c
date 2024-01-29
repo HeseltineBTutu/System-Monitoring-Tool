@@ -20,9 +20,9 @@ int read_data(struct SystemData data[])
 	}
 
 	count = 0;
-	while (fscanf(file, "Timestamp: %s\nCPU Usage: %lf\nMemory Usage: %d MB\nDisk Space: %lf\n",
-				data[count].timestamp, &data[count].cpuUsage, &data[count].memoryUsageMB,
-				&data[count].diskSpaceUsage) == 4)
+	while (fscanf(file, "Timestamp: %[^\n]\nCPU Usage: %lf\nMemory Usage: %d MB\nDisk Space: %lf\n",
+              data[count].timestamp, &data[count].cpuUsage, &data[count].memoryUsageMB,
+              &data[count].diskSpaceUsage) == 4)
 	{
 		count++;
 		if (count >= MAX_RECORDS)
