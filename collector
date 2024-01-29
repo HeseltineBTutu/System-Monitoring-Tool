@@ -4,9 +4,15 @@
 DEFAULT_DATA_FILE="system_data.txt"
 DEFAULT_ALERT_THRESHOLD=90
 
-# Get command-line arguments or use default values
+# Configuration  variables
 DATA_FILE=${1:-$DEFAULT_DATA_FILE}
 ALERT_THRESHOLD=${2:-$DEFAULT_ALERT_THRESHOLD}
+
+# Function to handle errors
+function handle_error {
+	echo "Error: $1"
+	exit 1
+}
 
 # Function to check if a command exists
 function command_exists {
@@ -16,15 +22,13 @@ function command_exists {
 # Function to check disk space and trigger an alert if necessary
 function check_disk_space {
     if ! command_exists "df"; then
-        echo "Error: 'df' command not found. Please install the 'coreutils' package."
-        exit 1
+        handle_error "'df' command not found. Please install the 'coreutils' package."
     fi
 
     local disk_space=$(df -h | awk '/\/$/ {print $5}' | tr -d '%')
 
     if [[ ! "$disk_space" =~ ^[0-9]+$ ]]; then
-        echo "Error: Unable to determine disk space. Check 'df' output."
-        exit 1
+        handle_error "Unable to determine disk space. Check 'df' output."
     fi
     
     if ((disk_space >= ALERT_THRESHOLD)); then
@@ -47,15 +51,13 @@ function collect_system_info {
     echo "Memory Usage: $(free -m | awk '/Mem/{print $3}') MB" >> "$DATA_FILE"
 
     if ! command_exists "df"; then
-        echo "Error: 'df' command not found. Please install the 'coreutils' package."
-        exit 1
+        handle_error "'df' command not found. Please install the 'coreutils' package."
     fi
 
     local disk_space=$(df -h | awk '/\/$/ {print $5}' | tr -d '%')
 
     if [[ ! "$disk_space" =~ ^[0-9]+$ ]]; then
-        echo "Error: Unable to determine disk space. Check 'df' output."
-        exit 1
+        handle_error  "Unable to determine disk space. Check 'df' output."
     fi
 
     echo "Disk Space: $disk_space%" >> "$DATA_FILE"
